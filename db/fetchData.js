@@ -122,11 +122,11 @@ async function updateAppointment(id, doctorId, clinicId, start_time, end_time, n
             [start_time, end_time, notes, id]
         );
 
-        // ✓ return data only, no res here
+        // return data only, no res here
         return updated.rows[0];
 
     } catch (err) {
-        // ✓ re-throw so route handler can catch and respond
+        // re-throw so route handler can catch and respond
         throw err;
     }
 }
@@ -138,21 +138,6 @@ async function updateAppointment(id, doctorId, clinicId, start_time, end_time, n
 //   return result.rows; // Array of row objects
 // }
 
-// async function getDoctorByEmail(email) {
-//   // Use $1 as a placeholder for the email variable
-//   const result = await pool.query("SELECT * FROM doctors WHERE email = $1", [email]);
-
-//   // Since email is unique, return the first row or null
-//   return result.rows[0] || null;
-// }
-
-// async function getAppointmentsByEmail(email) {
-//   // Use $1 as a placeholder for the email variable
-//   const result = await pool.query("SELECT * FROM doctors WHERE email = $1", [email]);
-
-//   // Since email is unique, return the first row or null
-//   return result.rows[0] || null;
-// }
 
 
 module.exports = { getAllTasks, getAllAppointments, updateAppointment };

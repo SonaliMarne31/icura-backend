@@ -61,19 +61,6 @@ app.patch('/appointments/:id/reschedule', verifyBffToken, async (req, res) => {
 //   }
 // });
 
-// app.get('/get-doctor', checkJwt, async (req, res) => {
-
-//   const emailid = req.auth.payload[process.env.AUTH0_AUDIENCE + '/email'];
-//   console.log('email id - backend ', emailid);
-//   try {
-//     const doctors = await getDoctorByEmail(emailid);
-//     res.json(doctors);
-//   } catch (err) {
-//     console.error('Error fetching doctors:', err);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-
-// });
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
