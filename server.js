@@ -1,69 +1,82 @@
 const express = require('express');
-const { Pool } = require("pg");
 require("dotenv").config();
 const app = express();
-const { checkJwt } = require('./middleware/auth');
+const { verifyBffToken } = require('./middleware/auth');
 const port = 8000;
+const { getAllTasks, getAllAppointments, updateAppointment } = require('./db/fetchData');
+app.use(express.json());                        // parses application/json
+app.use(express.urlencoded({ extended: true })); // parses form data
 
-app.get('/get-all', checkJwt, async (req, res) => {
+
+app.get('/get-all-tasks', verifyBffToken, async (req, res) => {
+  const { doctorId, clinicId } = req.user;
+
   try {
-    const doctors = await getAllDoctors();
-    res.json(doctors);
+    const tasks = await getAllTasks(doctorId, clinicId);
+    res.json(tasks);
   } catch (err) {
-    console.error('Error fetching doctors:', err);
+    console.error('Error fetching tasks:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-app.get('/get-doctor', checkJwt, async (req, res) => {
+app.get('/get-all-appointments', verifyBffToken, async (req, res) => {
+  const { doctorId, clinicId } = req.user;
 
-    const emailid = req.auth.payload[process.env.AUTH0_AUDIENCE+ '/email'];
-    console.log('email id - backend ', emailid);
-    try {
-        const doctors = await getDoctorByEmail(emailid);
-        res.json(doctors);
-    } catch (err) {
-        console.error('Error fetching doctors:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-
+  try {
+    const tasks = await getAllAppointments(doctorId, clinicId);
+    res.json(tasks);
+  } catch (err) {
+    console.error('Error fetching appointments:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
+
+app.patch('/appointments/:id/reschedule', verifyBffToken, async (req, res) => {
+    const { doctorId, clinicId }        = req.user;
+    const { id }                        = req.params;
+    const { start_time, end_time, reason } = req.body;
+
+    // ✓ validate required fields
+    if (!start_time || !end_time) {
+        return res.status(400).json({ error: 'start_time and end_time are required' });
+    }
+  try {
+    const appt = await updateAppointment(id, doctorId, clinicId, start_time, end_time, reason);
+    res.json(appt);
+  } catch (err) {
+    console.error('Error rescheduling appointment:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// app.get('/get-all', checkJwt, async (req, res) => {
+//   try {
+//     const doctors = await getAllDoctors();
+//     res.json(doctors);
+//   } catch (err) {
+//     console.error('Error fetching doctors:', err);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
+
+// app.get('/get-doctor', checkJwt, async (req, res) => {
+
+//   const emailid = req.auth.payload[process.env.AUTH0_AUDIENCE + '/email'];
+//   console.log('email id - backend ', emailid);
+//   try {
+//     const doctors = await getDoctorByEmail(emailid);
+//     res.json(doctors);
+//   } catch (err) {
+//     console.error('Error fetching doctors:', err);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+
+// });
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-
-
-const pool = new Pool({
-  host:     process.env.DB_HOST     || "localhost",
-  port:     parseInt(process.env.DB_PORT || "5432"),
-  database: process.env.DB_NAME     || "medportal",
-  user:     process.env.DB_USER     || "postgres",
-  password: process.env.DB_PASSWORD || "password",
-  max:      10,               // max connections in pool
-  idleTimeoutMillis:  30000,  // close idle connections after 30s
-  connectionTimeoutMillis: 2000,
-});
-
-async function getAllDoctors() {
-  const result = await pool.query("SELECT * FROM doctors limit 5");
-  return result.rows; // Array of row objects
-}
-
-async function getDoctorByEmail(email) {
-  // Use $1 as a placeholder for the email variable
-  const result = await pool.query("SELECT * FROM doctors WHERE email = $1", [email]);
-  
-  // Since email is unique, return the first row or null
-  return result.rows[0] || null; 
-}
-
-async function getAppointmentsByEmail(email) {
-  // Use $1 as a placeholder for the email variable
-  const result = await pool.query("SELECT * FROM doctors WHERE email = $1", [email]);
-  
-  // Since email is unique, return the first row or null
-  return result.rows[0] || null; 
-}
 
 
