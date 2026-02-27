@@ -10,9 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@apollo/server": "^4.11.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-oauth2-jwt-bearer": "^1.7.4",
+    "graphql": "^16.13.0",
+    "graphql-tag": "^2.12.6",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.18.0"
   }
